@@ -53,7 +53,7 @@
     "debug"         : false,    // Allow debugger statements e.g. browser breakpoints.
     "eqnull"        : false,    // Tolerate use of `== null`.
     "es5"           : false,    // Allow EcmaScript 5 syntax.
-    "esnext"        : false,    // Allow ES.next specific features such as `const` and `let`.
+    "esnext"        : true,     // Allow ES.next specific features such as `const` and `let`.
     "evil"          : false,    // Tolerate use of `eval`.
     "expr"          : false,    // Tolerate `ExpressionStatement` as Programs.
     "funcscope"     : false,    // Tolerate declarations of variables inside of control structures while accessing them later from the outside.
@@ -115,5 +115,17 @@
         //"anotherCoolGlobal",
         //"iLoveDouglas"
     ],
-    "indent"        : 4         // Specify indentation spacing
+    "indent"        : 4,        // Specify indentation spacing
+
+    "globals"   : {
+        /* MOCHA */
+        "describe"   : false,
+        "it"         : false,
+        "before"     : false,
+        "beforeEach" : false,
+        "after"      : false,
+        "afterEach"  : false
+    },
+
+    "-W124": true
 }
