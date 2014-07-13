@@ -19,6 +19,9 @@
     },
 
     "dependencies": {
+        "mkdirp": "0.5.x",
+        "chai": "1.9.x",
+        "chai-highlight": "0.2.x"
     },
 
     "devDependencies": {
