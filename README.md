@@ -46,38 +46,43 @@ aspects:
    You can choose, for example, to manually verify the new results of a handful
    of tests, and let the other tests update automatically with the new results.
 
+
 ## Tests ##
 
-A test is identified by its (group) name and conditions (a.k.a. inputs). The
-name is either specified by the user or deduced from the source code (e.g.
-function name).
+Individual tests are divided into groups. There are two kinds of groups:
+`static` and `dynamic`.
 
-All tests with the same name (but different conditions) form a **group**.
+Static tests are created manually, by calling the `unitTest()` method, one test
+at a time; while dynamic tests are created by calling the `wrapFunction()`
+method, one group at a time. Tests in a dynamic group are created automatically
+when the wrapped function is called.
+
+A test is identified by its group name and its own id (must be unique inside the
+group). A static test's id is specified by the user when creating it, while a
+dynamic test's id is a hash computed from its conditions (a.k.a. inputs).
+
+Group names are either specified by the user or deduced from the source code
+(e.g. function name).
 
 Conditions are the variable states that are required for the result to occur.
 For a mathematical function, these are the arguments of the function, but it may
 not be the case for a programming function. Therefore, the user is responsible
-for guaranteeing the specified conditions are both correct and complete.
+for guaranteeing that the specified conditions are both correct and complete.
 
 When side effects are at play, e.g., when dealing with an external database, the
-same input objects may lead to different results, because data are fetched from
+same input object may lead to different results, because data are fetched from
 the external database; and reversely, different input objects may lead to the
 same result, when difference in the connection object's internal states doesn't
 affect the fetched data.
 
-There are two kinds of test groups, `singular` and `plural`:
+Static tests don't contain conditions. The user is responsible for guaranteeing
+that the actual conditions are always the same when this test is run. This is
+standard unit-testing style, in which the user builds a specific test setup and
+asserts on the results.
 
-1. A singular test group only contains one test, without conditions. The user
-   is responsible for guaranteeing that the actual conditions are always the
-   same when this test is run. This is standard unit-testing style, in which the
-   user builds a specific test setup and assert on the results.
-2. A plural test group can contain many tests, with differing conditions. The
-   user is responsible for guaranteeing that the same specified conditions always
-   yield to the same result (for the same code).
-
-For tests in a plural test group, a hash of the combined conditions is calculated
-and used to index tests, so that we can quickly check whether a test with the
-same conditions already exists.
+On the other hand, tests in a dynamic group have differing conditions. The user
+is responsible for guaranteeing that the same specified conditions always yield
+to the same result (for the same code).
 
 Each test has an `importance` which decides how we deal with it:
 
@@ -85,24 +90,26 @@ Each test has an `importance` which decides how we deal with it:
            and fails whenever its result changes afterwards.
 2. `medium`. This test fails whenever its result changes after it's added.
 3. `low`. This test fails whenever its result changes when the major and minor
-          version of the program hasn't changed. In other words, result changes
-          after major or minor version changes are silently ignored.
+          versions of the program haven't changed. In other words, result
+          changes after major or minor version changes are silently ignored.
 
 
 ## File Structure and Workflow ##
 
-All files are JSON files, stored inside a user specified directory, and can be
-version controlled in either the main repository, or a sub-repository.
+All files are JSON files, stored inside a user specified root directory, and can
+be version controlled in either the main repository, or a sub-repository.
 
-Each singular test group is stored as a JSON file, using its name as the file
-name; each plural test group is stored as a directory, using its name as the
-directory name. Each test inside a plural group is stored as a JSON file under
-the group's directory, using its hash (of combined conditions) as the file name.
+Static tests are stored inside the `static` subdirectory of the root directory,
+while dynamic tests are stored inside the `dynamic` subdirectory.
+
+Each test group is stored as a directory, using its name as the directory name;
+and each test is stored as a JSON file under its group's directory, using its id
+as the file name.
 
 One particular trick is supported to allow the user to control the directory
 structure: if a group name contains slashes in it, for example, `path/to/test`,
-two nested directories `path` and `to` are created, and the group (file for
-singular group, directory for plural group) is stored inside directory `to`.
+three nested directories `path`, `to`, and `test` are created instead of one,
+and the group is stored inside directory `test`.
 
 These files can be considered additional unit tests, and can use the same
 workflow as normal unit tests. The only differences are that these tests can be
@@ -113,16 +120,18 @@ But the same principals apply. For example, if two developers work on the same
 part of code, and their changes make the same test to change in different ways,
 then a manual merge of the test is needed.
 
+
 ## Library Methods ##
 
 The following methods are provided:
 
-1. `wrapFunction(name, func, opt)`. Create a plural test group by wrapping a
+1. `unitTest(name, id, res, opt)`. Create a static test, or check it if the test
+                                   already exists. Default to high importance.
+2. `wrapFunction(name, func, opt)`. Create a dynamic test group by wrapping a
                                     function. Default to low importance.
-2. `addUnitTest(name, res, opt)`. Create a singular test group. Default to high
-                                  importance.
-3. `runTestsInGroup()`. Run all tests in a group at once. Currently only supports
-                        groups created using `wrapFunction()`.
+3. `runTestsInGroup(name, opt)`. Run all tests in a dynamic group at once.
+                                 Currently only supports groups created using
+                                 `wrapFunction()`.
 
 ## Command Line Tool ##
 
